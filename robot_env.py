@@ -13,12 +13,25 @@ class RobotEnv:
             env_dict (dict): Environment configuration dictionary.
             robot_dict (dict): Robot configuration dictionary.
         """
-        # Configure options
-        viewer_options = options.ViewerOptions()
-        sim_options = options.SimOptions(dt=env_dict["options"]["dt"])
+        # Set up the environment and robot
+        self._initialize_env(env_dict)
+        self._initialize_robot(robot_dict)
+        self.running = False  # Thread running flag
 
-        # Initialize entities and scene
-        self.entities = {}
+    def _initialize_env(self, env_dict: dict):
+        """
+        Populate the environment with objects.
+
+        Args:
+            env_dict (dict): Environment configuration dictionary.
+        """
+        self.dt = env_dict["options"]["dt"]
+        self.fps = env_dict["options"]["max_FPS"]
+        self.substeps = env_dict["options"]["substeps"]
+        # Configure options
+        viewer_options = options.ViewerOptions(max_FPS=self.fps)
+        sim_options = options.SimOptions(dt=self.dt, substeps=self.substeps)
+        # Initialize scene
         self.robot = None
         self.scene = gs.Scene(
             viewer_options=viewer_options,
@@ -26,21 +39,9 @@ class RobotEnv:
             show_viewer=True,
         )
 
-        # Set up the environment and robot
-        self._initialize_environment(env_dict["objects"])
-        self._initialize_robot(robot_dict)
-
-        self.running = False  # Thread running flag
-
-    def _initialize_environment(self, obj_dict: dict):
-        """
-        Populate the environment with objects.
-
-        Args:
-            obj_dict (dict): Dictionary containing object definitions.
-        """
-        for name, morph in obj_dict.items():
-            self.entities[name] = self.scene.add_entity(morph=morph)
+        # Initialize entities (except robots)
+        for _, morph in env_dict["objects"].items():
+            self.scene.add_entity(morph=morph)
 
     def _initialize_robot(self, robot_dict: dict):
         """

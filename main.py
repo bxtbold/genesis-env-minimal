@@ -13,6 +13,8 @@ if __name__ == "__main__":
     env_dict = {
         "options": {
             "dt": 0.01,
+            "max_FPS": 60,
+            "substeps": 1,
         },
         "objects": {"plane": gs.morphs.Plane()},
     }
